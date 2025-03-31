@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mess Hall Selection</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.15.0/dist/full.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
+    
+    <style>
+        body {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.5)), 
+                              url('https://www.nitk.ac.in/design-system/events/defaults/nitk.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        .card-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 400px;  /* Set max-width for a better look */
+        }
+    
+        .card {
+            background-color: rgba(255, 255, 255, 0.95); /* Slight transparency for blending with background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 100%;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            text-align: center;
+        }
+    
+        th {
+            background-color: #f4f4f4;
+        }
+    
+        .selected {
+            background-color: yellow !important;
+        }
+    
+        .register-btn, #logoutBtn {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    
+        .register-btn {
+            background-color: #007bff;
+            color: white;
+        }
+    
+        .register-btn:hover {
+            background-color: #0056b3;
+        }
+    
+        #logoutBtn {
+            background-color: red;
+            color: white;
+        }
+    
+        #logoutBtn:hover {
+            background-color: darkred;
+        }
+
+    </style>
+    
+    <body>
+        <div class="card-container">
+            <div class="card">
+                <!-- Title -->
+                <h2 class="text-2xl font-bold mb-4">Select Your Mess</h2>
+    
+                <!-- Mess List -->
+                <div id="messList">
+                    <table id="messTable">
+                        <thead>
+                            <tr>
+                                <th>Mess Name</th>
+                                <th>Vacant Seats</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messBody">
+                            <!-- Data will be populated dynamically -->
+                        
+                            <tr onclick="openMessPopup('${messName}', '${messType}', '${messId}')" style="cursor:pointer;">
+                                <td class="p-2 border text-blue-500 underline">${messName}</td>
+                                <td class="p-2 border">${vacantSeats}</td>
+                            </tr>   
+                        </tbody>
+                    </table>
+                </div>
+    
+                <!-- Register Button -->
+                <input type="hidden" id="selected-mess" value="">
+                <button class="register-btn" onclick="registerMess()">Register</button>
+    
+                <!-- Logout Button -->
+                <button id="logoutBtn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Mess Menu Pop-up -->
+        <div id="messPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-3/4 max-w-2xl relative">
+                <button onclick="closeMessPopup()" 
+                    style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; padding: 5px 10px; cursor: pointer;">
+                    X
+                </button>
+                <h2 id="messTitle" class="text-xl font-bold mb-2 text-center"></h2>
+                <p id="messType" class="text-center mb-4 text-gray-600"></p>
+                <div id="menuContent" class="overflow-y-auto max-h-96"></div>
+            </div>
+        </div>
+    </body>
+    
+    
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("http://localhost:3000/api/messes")
+                .then(response => response.json())
+                .then(data => {
+                    const messBody = document.getElementById("messBody");
+                    messBody.innerHTML = "";
+                    data.forEach(mess => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td>${mess.name}</td><td>${mess.vacant_seats}</td>`;
+                        row.addEventListener("click", function () {
+                            document.querySelectorAll("#messBody tr").forEach(r => r.classList.remove("selected"));
+                            row.classList.add("selected");
+                            document.getElementById("selected-mess").value = mess.name;
+
+                            console.log("Mess name clicked:", this.innerText);  // Debugging log
+                            openMessPopup(mess.name, "Mess Type", mess.name);
+                        });
+                        messBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error("Error fetching mess data:", error));
+        });
+    
+  
+        document.addEventListener("DOMContentLoaded", function() {
+            const studentId = sessionStorage.getItem("student_id"); // Retrieve student_id
+            if (studentId) {
+                console.log("Retrieved student ID:", studentId); // Debugging
+                document.getElementById("student-id-display").innerText = `Student ID: ${studentId}`;
+            } else {
+                console.log('No student ID found in session storage.');
+            }
+        });
+
+        //New registerMess function...
+        function registerMess() {
+            const selectedMess = document.getElementById("selected-mess").value;
+            const studentId = sessionStorage.getItem("student_id");
+
+            if (!selectedMess) {
+                alert("Please select a mess before registering.");
+                return;
+            }
+
+            fetch("http://localhost:3000/api/register-mess", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ student_id: studentId, mess_name: selectedMess })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // If response is not OK, extract the error message from JSON
+                    return response.json().then(err => { throw new Error(err.error || "Registration failed"); });
+                }
+                return response.json(); // Proceed normally if successful
+            })
+            .then(data => {
+                alert(data.message);
+                if (data.updatedVacantSeats !== undefined) {
+                    updateMessTable(); // 🔥 Refresh the mess table after successful registration
+                }
+            })
+            .catch(error => {
+                console.error("❌ Registration error:", error);
+                alert(error.message); // Show the actual error message from the server
+            });
+        }
+
+        function updateMessTable() {
+            fetch("http://localhost:3000/api/messes")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("✅ Updated mess data:", data); // DEBUG LOG
+
+                    const messTable = document.getElementById("messBody");
+                    messTable.innerHTML = ""; // Clear old table rows
+
+                    data.forEach(mess => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${mess.name || "N/A"}</td> 
+                            <td>${mess.vacant_seats}</td>
+                        `;
+                        messTable.appendChild(row);
+                    });
+                })
+                .catch(error => console.error("❌ Error fetching messes:", error));
+        }
+
+
+    </script>
+        
+    <!-- Script to handle logout-->
+    <script>
+        function logout() {
+            sessionStorage.removeItem("authenticated");
+            window.location.href = "loginpage.html";
+        }
+
+        let selectedMessName = "";
+        function openMessPopup(messName, messType, messId) {
+            console.log("Mess Popup function triggered for:", messName);
+            console.log("Mess type is :", messType);
+            console.log("Mess ID is :", messId);
+            document.getElementById("messPopup").style.display = "block";  
+            console.log("Clicked mess:", messName);  // Debugging line
+            const popup = document.getElementById("messPopup");
+            if (!popup) {
+                console.error("Mess popup element not found!");
+                return;
+            }
+
+            popup.style.display = "block";           
+            const menus = {
+                'Block 1 (Karavali) - Non Veg': {
+                    'Monday': ['Breakfast: Idli', 'Lunch: Chicken Biryani', 'Snacks: Samosa', 'Dinner: Fish Curry'],
+                    'Tuesday': ['Breakfast: Dosa', 'Lunch: Paneer Butter Masala', 'Snacks: Pakora', 'Dinner: Veg Pulao'],
+                    'Wednesday': ['Breakfast: Upma', 'Lunch: Mutton Rogan Josh', 'Snacks: Spring Rolls', 'Dinner: Dal Makhani'],
+                    'Thursday': ['Breakfast: Poha', 'Lunch: Fried Rice', 'Snacks: Chaat', 'Dinner: Egg Curry'],
+                    'Friday': ['Breakfast: Aloo Paratha', 'Lunch: Biryani', 'Snacks: Fruit Salad', 'Dinner: Mixed Veg'],
+                    'Saturday': ['Breakfast: Sandwich', 'Lunch: Pasta', 'Snacks: Cookies', 'Dinner: Grilled Chicken'],
+                    'Sunday': ['Breakfast: Pancakes', 'Lunch: Caesar Salad', 'Snacks: Nachos', 'Dinner: Pizza']
+                },
+                'Block 2 (Aravali) - Non Veg': {
+                    'Monday': ['Breakfast: Aloo Paratha', 'Lunch: Mutton Rogan Josh', 'Snacks: Samosa', 'Dinner: Dal Makhani'],
+                    'Tuesday': ['Breakfast: Dosa', 'Lunch: Chicken Curry', 'Snacks: Pakora', 'Dinner: Veg Pulao'],
+                    'Wednesday': ['Breakfast: Upma', 'Lunch: Fish Curry', 'Snacks: Spring Rolls', 'Dinner: Paneer Butter Masala'],
+                    'Thursday': ['Breakfast: Poha', 'Lunch: Biryani', 'Snacks: Chaat', 'Dinner: Egg Curry'],
+                    'Friday': ['Breakfast: Idli', 'Lunch: Fried Rice', 'Snacks: Fruit Salad', 'Dinner: Mixed Veg'],
+                    'Saturday': ['Breakfast: Sandwich', 'Lunch: Pasta', 'Snacks: Cookies', 'Dinner: Grilled Chicken'],
+                    'Sunday': ['Breakfast: Pancakes', 'Lunch: Caesar Salad', 'Snacks: Nachos', 'Dinner: Pizza']
+                },
+                'Block 3 (Vindhya) - Non Veg': {
+                    'Monday': ['Breakfast: French Toast', 'Lunch: Grilled Chicken Salad', 'Snacks: Nachos', 'Dinner: Veg Curry'],
+                    'Tuesday': ['Breakfast: Smoothie Bowl', 'Lunch: Pasta Primavera', 'Snacks: Fruit Chaat', 'Dinner: Tandoori Chicken'],
+                    'Wednesday': ['Breakfast: Oatmeal', 'Lunch: Quinoa Salad', 'Snacks: Veg Spring Rolls', 'Dinner: Butter Chicken'],
+                    'Thursday': ['Breakfast: Bagel with Cream Cheese', 'Lunch: Stir-fried Veggies', 'Snacks: Hummus and Pita', 'Dinner: Paneer Tikka'],
+                    'Friday': ['Breakfast: Chia Pudding', 'Lunch: Sushi Rolls', 'Snacks: Cheese Platter', 'Dinner: Thai Curry'],
+                    'Saturday': ['Breakfast: Waffles', 'Lunch: Burrito Bowl', 'Snacks: Popcorn', 'Dinner: BBQ Ribs'],
+                    'Sunday': ['Breakfast: Eggs Benedict', 'Lunch: Caesar Wrap', 'Snacks: Cookies', 'Dinner: Lasagna']
+                },
+                'Block 4 (Satpura) - Non Veg': {
+                    'Monday': ['Breakfast: Paratha', 'Lunch: Chicken Curry', 'Snacks: Chips', 'Dinner: Veg Biryani'],
+                    'Tuesday': ['Breakfast: Omelette', 'Lunch: Fish Tacos', 'Snacks: Guacamole', 'Dinner: Stir-fried Noodles'],
+                    'Wednesday': ['Breakfast: Smoothie', 'Lunch: Lentil Soup', 'Snacks: Crackers', 'Dinner: Grilled Salmon'],
+                    'Thursday': ['Breakfast: Muffins', 'Lunch: Chicken Caesar Salad', 'Snacks: Veggie Sticks', 'Dinner: Stuffed Peppers'],
+                    'Friday': ['Breakfast: Cereal', 'Lunch: Falafel Wrap', 'Snacks: Trail Mix', 'Dinner: Pizza'],
+                    'Saturday': ['Breakfast: Crepes', 'Lunch: BBQ Chicken', 'Snacks: Fruit Salad', 'Dinner: Pasta'],
+                    'Sunday': ['Breakfast: Frittata', 'Lunch: Shrimp Tacos', 'Snacks: Cheese Sticks', 'Dinner: Meatloaf']
+                },
+                'Block 5 - Non Veg': {
+                    'Monday': ['Breakfast: Toast', 'Lunch: Veggie Burger', 'Snacks: Chips', 'Dinner: Chicken Alfredo'],
+                    'Tuesday': ['Breakfast: Pancakes', 'Lunch: Greek Salad', 'Snacks: Fruit', 'Dinner: Beef Stir-fry'],
+                    'Wednesday': ['Breakfast: Yogurt Parfait', 'Lunch: Chicken Wrap', 'Snacks: Nuts', 'Dinner: Veggie Stir-fry'],
+                    'Thursday': ['Breakfast: Smoothie', 'Lunch: Quinoa Bowl', 'Snacks: Popcorn', 'Dinner: Tacos'],
+                    'Friday': ['Breakfast: Bagel', 'Lunch: Sushi', 'Snacks: Veggie Chips', 'Dinner: Curry'],
+                    'Saturday': ['Breakfast: Oatmeal', 'Lunch: Chicken Salad', 'Snacks: Cookies', 'Dinner: Pasta'],
+                    'Sunday': ['Breakfast: Muffins', 'Lunch: Burrito', 'Snacks: Fruit Salad', 'Dinner: Pizza']
+                },
+                'Block 7 (Sahayadri) - Veg': {
+                    'Monday': ['Breakfast: Idli', 'Lunch: Veg Thali', 'Snacks: Samosa', 'Dinner: Paneer Butter Masala'],
+                    'Tuesday': ['Breakfast: Dosa', 'Lunch: Chole Bhature', 'Snacks: Pakora', 'Dinner: Veg Pulao'],
+                    'Wednesday': ['Breakfast: Upma', 'Lunch: Mutton Rogan Josh', 'Snacks: Spring Rolls', 'Dinner: Dal Makhani'],
+                    'Thursday': ['Breakfast: Poha', 'Lunch: Fried Rice', 'Snacks: Chaat', 'Dinner: Egg Curry'],
+                    'Friday': ['Breakfast: Aloo Paratha', 'Lunch: Biryani', 'Snacks: Fruit Salad', 'Dinner: Mixed Veg'],
+                    'Saturday': ['Breakfast: Sandwich', 'Lunch: Pasta', 'Snacks: Cookies', 'Dinner: Grilled Chicken'],
+                    'Sunday': ['Breakfast: Pancakes', 'Lunch: Caesar Salad', 'Snacks: Nachos', 'Dinner: Pizza']
+                },
+                'Block 8 (Trishul) - Veg': {
+                    'Monday': ['Breakfast: Dosa', 'Lunch: Veg Thali', 'Snacks: Samosa', 'Dinner: Paneer Butter Masala'],
+                    'Tuesday': ['Breakfast: Idli', 'Lunch: Chole Bhature', 'Snacks: Pakora', 'Dinner: Veg Pulao'],
+                    'Wednesday': ['Breakfast: Upma', 'Lunch: Mutton Rogan Josh', 'Snacks: Spring Rolls', 'Dinner: Dal Makhani'],
+                    'Thursday': ['Breakfast: Poha', 'Lunch: Fried Rice', 'Snacks: Chaat', 'Dinner: Egg Curry'],
+                    'Friday': ['Breakfast: Aloo Paratha', 'Lunch: Biryani', 'Snacks: Fruit Salad', 'Dinner: Mixed Veg'],
+                    'Saturday': ['Breakfast: Sandwich', 'Lunch: Pasta', 'Snacks: Cookies', 'Dinner: Grilled Chicken'],
+                    'Sunday': ['Breakfast: Pancakes', 'Lunch: Caesar Salad', 'Snacks: Nachos', 'Dinner: Pizza']
+                },
+                'Mega Mess - Veg': {
+                    'Monday': ['Breakfast: Pancakes', 'Lunch: Chicken Salad', 'Snacks: Nachos', 'Dinner: Veg Curry'],
+                    'Tuesday': ['Breakfast: Smoothie Bowl', 'Lunch: Pasta Primavera', 'Snacks: Fruit Chaat', 'Dinner: Tandoori Chicken'],
+                    'Wednesday': ['Breakfast: Oatmeal', 'Lunch: Quinoa Salad', 'Snacks: Veg Spring Rolls', 'Dinner: Butter Chicken'],
+                    'Thursday': ['Breakfast: Bagel with Cream Cheese', 'Lunch: Stir-fried Veggies', 'Snacks: Hummus and Pita', 'Dinner: Paneer Tikka'],
+                    'Friday': ['Breakfast: Chia Pudding', 'Lunch: Sushi Rolls', 'Snacks: Cheese Platter', 'Dinner: Thai Curry'],
+                    'Saturday': ['Breakfast: Waffles', 'Lunch: Burrito Bowl', 'Snacks: Popcorn', 'Dinner: BBQ Ribs'],
+                    'Sunday': ['Breakfast: Eggs Benedict', 'Lunch: Caesar Wrap', 'Snacks: Cookies', 'Dinner: Lasagna']
+                }
+            };
+
+            if (!menus[messId]) {
+                alert("Menu not found for this mess.");
+                return;
+            }
+
+            const menuTable = `
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-2 border">Day</th>
+                            <th class="p-2 border">Breakfast</th>
+                            <th class="p-2 border">Lunch</th>
+                            <th class="p-2 border">Snacks</th>
+                            <th class="p-2 border">Dinner</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(menus[messId]).map(([day, meals]) => `
+                            <tr>
+                                <td class="border p-2">${day}</td>
+                                <td class="border p-2">${meals[0]}</td>
+                                <td class="border p-2">${meals[1]}</td>
+                                <td class="border p-2">${meals[2]}</td>
+                                <td class="border p-2">${meals[3]}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById("messTitle").innerText = messName;
+           //document.getElementById("messType").innerText = messType;
+            document.getElementById("menuContent").innerHTML = menuTable;
+            document.getElementById("messPopup").classList.add("modal-open");
+        }
+
+        function closeMessPopup() {
+            document.getElementById("messPopup").style.display = "none";
+        }
+    </script>
+
+    <!--<button class="btn btn-success w-full mb-4" onclick="fetchStudents()">View Registered Students</button> -->
+    <div id="studentList" class="mt-4"></div>
+    <!-- Added Button to Fetch and Display Student Data -->
+    <script>
+        function fetchStudents() {
+            fetch('/api/students')
+                .then(response => response.json())
+                .then(data => {
+                    const tableRows = data.map(student => `
+                        <tr>
+                            <td>${student.name}</td>
+                            <td>${student.age}</td>
+                            <td>${student.email}</td>
+                            <td>${student.mess || 'Not Registered'}</td>
+                        </tr>
+                    `).join('');
+                    
+                    document.getElementById('studentList').innerHTML = `
+                        <table class="table w-full mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Email</th>
+                                    <th>Mess</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    `;
+                })
+                .catch(error => console.error('Error fetching student data:', error));
+        }
+    </script>
+</html>
