@@ -67,10 +67,9 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 ---
 
 ### `messes`
-| name (PK)      |
+| mess_name (PK)      |
 |----------------|
 | Mega Mess      |
-| Hostel Mess 1  |
 
 ---
 
