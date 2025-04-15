@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mess Feedback</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.15.0/dist/full.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="flex items-center justify-center min-h-screen bg-cover bg-center"
+      style="background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.5)), url('https://www.nitk.ac.in/design-system/events/defaults/nitk.jpg');">
+  
+  <div class="card w-full max-w-2xl bg-base-100 shadow-xl p-4">
+    <h2 class="text-3xl font-bold text-center mb-4">Mess Feedback</h2>
+    
+    <form id="feedbackForm" class="space-y-4">
+      <div class="form-control">
+        <label class="label"><span class="label-text">Select Mess</span></label>
+        <select id="messSelect" class="select select-bordered w-full" required>
+          <!-- Mess names will be populated dynamically -->
+        </select>
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">Star Rating</span></label>
+        <div class="rating rating-lg">
+          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1" required />
+          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2" />
+          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3" />
+          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4" />
+          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5" />
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">Feedback</span></label>
+        <textarea id="feedbackText" class="textarea textarea-bordered h-24" placeholder="Write your feedback..." required></textarea>
+      </div>
+
+      <div class="form-control mt-4">
+        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+      </div>
+    </form>
+
+    <div class="divider mt-6">Recent Feedbacks</div>
+    <div id="feedbackList" class="space-y-4 max-h-80 overflow-y-auto"></div>
+  </div>
+
+  <script>
+    // Populate mess dropdown
+    async function loadMesses() {
+      const res = await fetch("/api/messes");
+      const messes = await res.json();
+      const messSelect = document.getElementById("messSelect");
+      messSelect.innerHTML = messes.map(mess =>
+        `<option value="${mess.name}">${mess.name}</option>`
+      ).join('');
+    }
+
+    // Load last 10 feedbacks
+    async function loadFeedbacks() {
+      const res = await fetch("/api/feedbacks");
+      const feedbacks = await res.json();
+      const container = document.getElementById("feedbackList");
+
+      container.innerHTML = feedbacks.map(fb => `
+        <div class="p-4 bg-base-200 rounded-lg shadow">
+          <div class="flex justify-between">
+            <span class="font-semibold">${fb.mess_name}</span>
+            <span class="text-sm opacity-70">${fb.timestamp}</span>
+          </div>
+          <p class="mt-1 text-sm">⭐ ${fb.rating} — ${fb.feedback}</p>
+          <p class="text-xs text-gray-400 mt-1">By: ${fb.student_id}</p>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const student_id = sessionStorage.getItem("student_id");
+      const mess_name = document.getElementById("messSelect").value;
+      const rating = document.querySelector('input[name="rating"]:checked')?.value;
+      const feedback = document.getElementById("feedbackText").value;
+
+      const res = await fetch("/api/submit-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id, mess_name, rating, feedback })
+      });
+
+      if (res.ok) {
+        alert("Feedback submitted!");
+        document.getElementById("feedbackForm").reset();
+        loadFeedbacks();
+      } else {
+        alert("Error submitting feedback.");
+      }
+    });
+
+    loadMesses();
+    loadFeedbacks();
+  </script>
+</body>
+</html>
