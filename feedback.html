@@ -83,13 +83,14 @@
                 const div = document.createElement("div");
                 div.className = "p-4 border rounded bg-gray-50";
 
-                div.innerHTML = `
-                    <p class="text-sm text-gray-600">👤 Student ID: <strong>${fb.student_id}</strong></p>
-                    <p class="text-sm">⭐ Rating: <strong>${fb.rating}</strong></p>
-                    <p class="text-sm">💬 ${fb.feedback}</p>
-                    <p class="text-xs text-right text-gray-400">${new Date(fb.timestamp).toLocaleString()}</p>
-                `;
+               const stars = "★".repeat(entry.rating) + "☆".repeat(5 - entry.rating);
 
+        div.innerHTML = `
+          <p class="font-bold text-primary">Roll No: ${entry.student_id}</p>
+          <p class="text-yellow-500 text-lg">${stars}</p>
+          <p class="text-sm">${entry.feedback}</p>
+          <p class="text-xs text-gray-400">${new Date(entry.timestamp).toLocaleString()}</p>
+        `;
                 feedbackList.appendChild(div);
             });
         }
