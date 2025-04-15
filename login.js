@@ -187,6 +187,39 @@ function login() {
     }
 }
 
+// POST Feedback
+app.post('/api/submit-feedback', async (req, res) => {
+    const { student_id, mess_name, rating, feedback } = req.body;
+
+    if (!student_id || !mess_name || !rating || !feedback) {
+        return res.status(400).json({ error: "Missing fields in feedback submission" });
+    }
+
+    try {
+        await db.query(
+            'INSERT INTO feedback (student_id, mess_name, rating, feedback) VALUES (?, ?, ?, ?)',
+            [student_id, mess_name, rating, feedback]
+        );
+        res.status(200).json({ message: "Feedback submitted" });
+    } catch (err) {
+        console.error("❌ Error saving feedback:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+// GET Recent Feedbacks
+app.get('/api/feedbacks', async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT student_id, mess_name, rating, feedback, timestamp FROM feedback ORDER BY timestamp DESC LIMIT 10'
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error("❌ Error fetching feedbacks:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
 // Server listening
 const PORT = 3000;
 app.listen(PORT, () => {
