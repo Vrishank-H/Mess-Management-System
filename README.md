@@ -80,8 +80,8 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 ---
 
 ### `menus`
-| mess_name | day       | breakfast | lunch | dinner |
-|-----------|-----------|-----------|-------|--------|
+| mess_name | day       | breakfast | lunch | snacks | dinner |
+|-----------|-----------|-----------|-------|--------|--------|
 
 ---
 
