@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mess Feedback</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.15.0/dist/full.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
 </head>
-<body class="bg-gray-100 p-6">
+<body class="flex items-center justify-center min-h-screen bg-cover bg-center" style="background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.5)), url('https://www.nitk.ac.in/design-system/events/defaults/nitk.jpg');">
   <div class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
     <h1 class="text-2xl font-bold mb-4 text-center">📝 Mess Feedback Form</h1>
 
@@ -38,6 +39,7 @@
   </div>
 
   <script>
+    let selectedRating = 0;
     document.addEventListener("DOMContentLoaded", async () => {
         const messDropdown = document.getElementById("mess");
         const feedbackList = document.getElementById("feedbackList");
@@ -79,19 +81,20 @@
             }
 
             feedbacks.forEach(fb => {
-                const div = document.createElement("div");
-                div.className = "p-4 border rounded bg-gray-50";
+            const div = document.createElement("div");
+            div.className = "p-4 border rounded bg-gray-50";
 
-               const stars = "★".repeat(entry.rating) + "☆".repeat(5 - entry.rating);
+            const stars = "★".repeat(fb.rating) + "☆".repeat(5 - fb.rating);
 
-        div.innerHTML = `
-          <p class="font-bold text-primary">Roll No: ${entry.student_id}</p>
-          <p class="text-yellow-500 text-lg">${stars}</p>
-          <p class="text-sm">${entry.feedback}</p>
-          <p class="text-xs text-gray-400">${new Date(entry.timestamp).toLocaleString()}</p>
-        `;
-                feedbackList.appendChild(div);
+            div.innerHTML = `
+            <p class="font-bold text-primary">Roll No: ${fb.student_id}</p>
+            <p class="text-yellow-500 text-lg">${stars}</p>
+            <p class="text-sm">${fb.feedback}</p>
+            <p class="text-xs text-gray-400">${new Date(fb.timestamp).toLocaleString()}</p>
+            `;
+            feedbackList.appendChild(div);
             });
+
         }
 
         // Mess change triggers feedback reload
@@ -127,7 +130,7 @@
             e.preventDefault();
 
             const messName = messDropdown.value;
-            const rating = parseInt(document.getElementById("rating").value);
+            const rating = selectedRating;
             const feedbackText = document.getElementById("feedback").value;
 
             const response = await fetch("http://localhost:3000/api/submit-feedback", {
