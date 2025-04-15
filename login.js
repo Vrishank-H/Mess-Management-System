@@ -56,7 +56,7 @@ app.get('/api/registrations', (req, res) => {
     });
 });
 
-// Add mess selection into registrations table 
+//Add mess selection into registrations table 
 app.post('/api/register-mess', async (req, res) => {
     console.log("✅ Received request at /api/register-mess");
 
@@ -135,6 +135,37 @@ app.post('/api/register-mess', async (req, res) => {
     }
 });
 
+// Setting the route for /
+app.get('/', (req, res) => {
+    res.send('Welcome to the Mess Management System! 🚀');
+});
+
+function login() {
+    const regNumber = document.getElementById("regNumber").value;
+    const password = document.getElementById("password").value;
+    const errorMessage = document.getElementById("error-message");
+
+    const validUsers = [
+        { regNumber: "2310037", password: "akshaj123" },
+        { regNumber: "2310047", password: "vrishank123" },
+        { regNumber: "2310885", password: "vamshi123" },
+        { regNumber: "2310932", password: "dhruv123" }
+    ];
+
+    const user = validUsers.find(u => u.regNumber === regNumber && u.password === password);
+
+    if (user) {
+        sessionStorage.setItem("authenticated", "true");
+        sessionStorage.setItem("student_id", regNumber);
+        console.log("Stored student_id:", regNumber);
+        window.location.href = "mess-homepage.html";
+        return false;
+    } else {
+        errorMessage.textContent = "Invalid Registration Number or Password";
+        return false;
+    }
+}
+
 // POST Feedback
 app.post('/api/submit-feedback', async (req, res) => {
     const { student_id, mess_name, rating, feedback } = req.body;
@@ -166,11 +197,6 @@ app.get('/api/feedbacks', async (req, res) => {
         console.error("❌ Error fetching feedbacks:", err);
         res.status(500).json({ error: "Database error" });
     }
-});
-
-// Setting the route for /
-app.get('/', (req, res) => {
-    res.send('Welcome to the Mess Management System! 🚀');
 });
 
 // Server listening
