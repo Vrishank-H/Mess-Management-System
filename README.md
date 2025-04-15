@@ -43,7 +43,7 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ---
 
-### 3. 🍛 Mess Menu Display (`menu.html`)
+### 3. 🍛 Mess Menu Display 
 - Displays the current **weekly menu** for each mess.
 - Menu data is retrieved from `menus` table.
 - Allows switching between messes via dropdown.
