@@ -1,104 +1,136 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mess Feedback</title>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.15.0/dist/full.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-cover bg-center"
-      style="background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.5)), url('https://www.nitk.ac.in/design-system/events/defaults/nitk.jpg');">
-  
-  <div class="card w-full max-w-2xl bg-base-100 shadow-xl p-4">
-    <h2 class="text-3xl font-bold text-center mb-4">Mess Feedback</h2>
-    
+<body class="bg-gray-100 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">📝 Mess Feedback Form</h1>
+
+    <!-- Feedback Form -->
     <form id="feedbackForm" class="space-y-4">
-      <div class="form-control">
-        <label class="label"><span class="label-text">Select Mess</span></label>
-        <select id="messSelect" class="select select-bordered w-full" required>
-          <!-- Mess names will be populated dynamically -->
-        </select>
+      <div>
+        <label for="mess" class="block font-medium">Select Mess</label>
+        <select id="mess" class="w-full p-2 border rounded" required></select>
       </div>
 
-      <div class="form-control">
-        <label class="label"><span class="label-text">Star Rating</span></label>
-        <div class="rating rating-lg">
-          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1" required />
-          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2" />
-          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3" />
-          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4" />
-          <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5" />
-        </div>
+      <div>
+        <label for="rating" class="block font-medium">Star Rating (1–5)</label>
+        <input type="number" id="rating" min="1" max="5" class="w-full p-2 border rounded" required />
       </div>
 
-      <div class="form-control">
-        <label class="label"><span class="label-text">Feedback</span></label>
-        <textarea id="feedbackText" class="textarea textarea-bordered h-24" placeholder="Write your feedback..." required></textarea>
+      <div>
+        <label for="feedback" class="block font-medium">Feedback</label>
+        <textarea id="feedback" class="w-full p-2 border rounded" rows="4" required></textarea>
       </div>
 
-      <div class="form-control mt-4">
-        <button type="submit" class="btn btn-primary">Submit Feedback</button>
-      </div>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Submit Feedback
+      </button>
     </form>
 
-    <div class="divider mt-6">Recent Feedbacks</div>
-    <div id="feedbackList" class="space-y-4 max-h-80 overflow-y-auto"></div>
+    <div class="mt-8">
+      <h2 class="text-xl font-semibold mb-2">🗂 Recent Feedbacks</h2>
+      <div id="feedbackList" class="space-y-3"></div>
+    </div>
   </div>
 
   <script>
-    // Populate mess dropdown
-    async function loadMesses() {
-      const res = await fetch("/api/messes");
-      const messes = await res.json();
-      const messSelect = document.getElementById("messSelect");
-      messSelect.innerHTML = messes.map(mess =>
-        `<option value="${mess.name}">${mess.name}</option>`
-      ).join('');
-    }
+    document.addEventListener("DOMContentLoaded", async () => {
+        const messDropdown = document.getElementById("mess");
+        const feedbackList = document.getElementById("feedbackList");
+        const studentId = sessionStorage.getItem("student_id");
 
-    // Load last 10 feedbacks
-    async function loadFeedbacks() {
-      const res = await fetch("/api/feedbacks");
-      const feedbacks = await res.json();
-      const container = document.getElementById("feedbackList");
+        if (!studentId) {
+            alert("Please log in first.");
+            window.location.href = "index.html";
+            return;
+        }
 
-      container.innerHTML = feedbacks.map(fb => `
-        <div class="p-4 bg-base-200 rounded-lg shadow">
-          <div class="flex justify-between">
-            <span class="font-semibold">${fb.mess_name}</span>
-            <span class="text-sm opacity-70">${fb.timestamp}</span>
-          </div>
-          <p class="mt-1 text-sm">⭐ ${fb.rating} — ${fb.feedback}</p>
-          <p class="text-xs text-gray-400 mt-1">By: ${fb.student_id}</p>
-        </div>
-      `).join('');
-    }
+        // Load messes from backend
+        async function loadMesses() {
+            const res = await fetch("http://localhost:3000/api/messes");
+            const messes = await res.json();
 
-    document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const student_id = sessionStorage.getItem("student_id");
-      const mess_name = document.getElementById("messSelect").value;
-      const rating = document.querySelector('input[name="rating"]:checked')?.value;
-      const feedback = document.getElementById("feedbackText").value;
+            messes.forEach(mess => {
+                const option = document.createElement("option");
+                option.value = mess.name;
+                option.textContent = mess.name;
+                messDropdown.appendChild(option);
+            });
 
-      const res = await fetch("/api/submit-feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id, mess_name, rating, feedback })
-      });
+            if (messes.length > 0) {
+                loadFeedbacks(messes[0].name);
+            }
+        }
 
-      if (res.ok) {
-        alert("Feedback submitted!");
-        document.getElementById("feedbackForm").reset();
-        loadFeedbacks();
-      } else {
-        alert("Error submitting feedback.");
-      }
+        // Load feedbacks for selected mess
+        async function loadFeedbacks(messName) {
+            const res = await fetch(`http://localhost:3000/api/feedbacks/${messName}`);
+            const feedbacks = await res.json();
+
+            feedbackList.innerHTML = "";
+
+            if (feedbacks.length === 0) {
+                feedbackList.innerHTML = "<p class='text-gray-500'>No feedbacks yet.</p>";
+                return;
+            }
+
+            feedbacks.forEach(fb => {
+                const div = document.createElement("div");
+                div.className = "p-4 border rounded bg-gray-50";
+
+                div.innerHTML = `
+                    <p class="text-sm text-gray-600">👤 Student ID: <strong>${fb.student_id}</strong></p>
+                    <p class="text-sm">⭐ Rating: <strong>${fb.rating}</strong></p>
+                    <p class="text-sm">💬 ${fb.feedback}</p>
+                    <p class="text-xs text-right text-gray-400">${new Date(fb.timestamp).toLocaleString()}</p>
+                `;
+
+                feedbackList.appendChild(div);
+            });
+        }
+
+        // Mess change triggers feedback reload
+        messDropdown.addEventListener("change", (e) => {
+            loadFeedbacks(e.target.value);
+        });
+
+        // Handle form submission
+        const form = document.getElementById("feedbackForm");
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const messName = messDropdown.value;
+            const rating = parseInt(document.getElementById("rating").value);
+            const feedbackText = document.getElementById("feedback").value;
+
+            const response = await fetch("http://localhost:3000/api/submit-feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    mess_name: messName,
+                    rating: rating,
+                    feedback: feedbackText
+                })
+            });
+
+            if (response.ok) {
+                alert("✅ Feedback submitted successfully!");
+                form.reset();
+                loadFeedbacks(messName);
+            } else {
+                alert("❌ Failed to submit feedback");
+            }
+        });
+
+        loadMesses();
     });
-
-    loadMesses();
-    loadFeedbacks();
   </script>
 </body>
 </html>
+
