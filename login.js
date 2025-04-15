@@ -56,7 +56,7 @@ app.get('/api/registrations', (req, res) => {
     });
 });
 
-//Add mess selection into registrations table 
+// Add mess selection into registrations table 
 app.post('/api/register-mess', async (req, res) => {
     console.log("✅ Received request at /api/register-mess");
 
@@ -199,8 +199,25 @@ app.get('/api/feedbacks', async (req, res) => {
     }
 });
 
+// 🆕 GET Feedbacks for Specific Mess
+app.get('/api/feedbacks/:mess_name', async (req, res) => {
+    const messName = req.params.mess_name;
+
+    try {
+        const [rows] = await db.query(
+            'SELECT student_id, rating, feedback, timestamp FROM feedback WHERE mess_name = ? ORDER BY timestamp DESC LIMIT 10',
+            [messName]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error("❌ Error fetching feedbacks for mess:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
 // Server listening
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
