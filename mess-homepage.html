@@ -118,7 +118,10 @@
                 <!-- Register Button -->
                 <input type="hidden" id="selected-mess" value="">
                 <button class="register-btn" onclick="registerMess()">Register</button>
-    
+        <!-- Add this where you'd like the feedback button to appear -->
+<div class="flex justify-center mt-4">
+  <a href="feedback.html" class="btn btn-secondary">Give Feedback</a>
+</div>
                 <!-- Logout Button -->
                 <button id="logoutBtn" onclick="logout()">Logout</button>
             </div>
@@ -137,13 +140,6 @@
             </div>
         </div>
     </body>
-    
-    <!-- Add this where you'd like the feedback button to appear -->
-<div class="flex justify-center mt-4">
-  <a href="feedback.html" class="btn btn-secondary">Give Feedback</a>
-</div>
-
-    
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             fetch("http://localhost:3000/api/messes")
