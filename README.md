@@ -60,9 +60,9 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 ## 🗃️ Database Schema Overview
 
 ### `students`
-| student_id (PK) |
-|------------------|
-| 21XX10XX |
+| student_id (PK) | name |
+|------------------|-------|
+| 21XX10XX | xxxxxxx|
 
 ---
 
