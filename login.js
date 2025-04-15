@@ -186,11 +186,13 @@ app.post('/api/submit-feedback', async (req, res) => {
     }
 });
 
-// GET Recent Feedbacks
-app.get('/api/feedbacks', async (req, res) => {
+// GET Recent Feedbacks for a specific mess
+app.get('/api/feedbacks/:mess_name', async (req, res) => {
+    const messName = req.params.mess_name;
     try {
         const [rows] = await db.query(
-            'SELECT student_id, mess_name, rating, feedback, timestamp FROM feedback ORDER BY timestamp DESC LIMIT 10'
+            'SELECT student_id, mess_name, rating, feedback, timestamp FROM feedback WHERE mess_name = ? ORDER BY timestamp DESC LIMIT 10',
+            [messName]
         );
         res.json(rows);
     } catch (err) {
