@@ -1,4 +1,4 @@
-# 🍽️ Mess Management System - NITK
+# Mess Management System - NITK
 
 A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaScript (frontend), and Node.js + Express with MySQL (backend). This project helps students register for messes, view menus, give feedback, and manage their mess selections efficiently.
 
@@ -11,11 +11,11 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ## Features
 
-- 🔐 Student login with Roll Number
-- 🏢 Mess registration and selection
-- 🍛 Weekly menu display per mess
-- ⭐ Rate and review messes with feedback
-- 🗃️ View latest 10 feedbacks per mess
+- Student login with Roll Number
+- Mess registration and selection
+- Weekly menu display per mess
+- Rate and review messes with feedback
+- View latest 10 feedbacks per mess
 
 ---
 
@@ -29,28 +29,28 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ## Modules & Their Working
 
-### 1. 🔐 Login (`index.html`, `login.js`)
+### 1. Login (`index.html`, `login.js`)
 - Student enters their **roll number**.
 - Session is stored using `sessionStorage`.
 - User is redirected to mess selection or menu/feedback based on access.
 
 ---
 
-### 2. 🏢 Mess Selection (`mess-selection.html`)
+### 2. Mess Selection (`mess-selection.html`)
 - Dropdown of available messes is fetched from the backend.
 - Student selects one mess to register for.
 - Selection is saved in the `registrations` table (with student ID and mess name).
 
 ---
 
-### 3. 🍛 Mess Menu Display 
+### 3. Mess Menu Display 
 - Displays the current **weekly menu** for each mess.
 - Menu data is retrieved from `menus` table.
 - Allows switching between messes via dropdown.
 
 ---
 
-### 4. ⭐ Feedback System (`feedback.html`)
+### 4. Feedback System (`feedback.html`)
 - Student selects a mess, provides **star rating (1–5)** and a **comment**.
 - Feedback is submitted via `/api/submit-feedback`.
 - Most recent 10 feedbacks (with stars, comments, roll no., time) are shown below the form.
