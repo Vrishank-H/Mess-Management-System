@@ -4,12 +4,12 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 
 ---
 
-## ✅ Features
+## Features
 
 - 🔐 Student login with Roll Number
 - 🏢 Mess registration and selection
@@ -19,7 +19,7 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ---
 
-## 🔧 Technologies Used
+## Technologies Used
 
 - **Frontend**: HTML, TailwindCSS, DaisyUI, JavaScript
 - **Backend**: Node.js, Express
@@ -27,7 +27,7 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ---
 
-## 🚀 Modules & Their Working
+## Modules & Their Working
 
 ### 1. 🔐 Login (`index.html`, `login.js`)
 - Student enters their **roll number**.
@@ -57,7 +57,7 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ---
 
-## 🗃️ Database Schema Overview
+## Database Schema Overview
 
 ### `students`
 | student_id (PK) | name |
@@ -92,7 +92,7 @@ A web-based Mess Management System built using HTML, TailwindCSS, DaisyUI, JavaS
 
 ---
 
-## 🧪 API Routes
+## API Routes
 
 | Method | Route                                | Description                        |
 |--------|--------------------------------------|------------------------------------|
